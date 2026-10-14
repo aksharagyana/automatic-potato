@@ -8,7 +8,7 @@ Usage: sudo bash setup.sh [--skip-code] [--docker-compat]
        bash setup.sh --help
 
 Installs system-wide Podman, Buildah, Skopeo, Git, GitLab CLI, AWS CLI v2,
-network diagnostics, and the latest stable VS Code from Microsoft's RPM repo.
+basic networking tools, and the latest stable VS Code from Microsoft's RPM repo.
   --skip-code      Skip the desktop editor on headless servers.
   --docker-compat  Install podman-docker (Docker-compatible command, not Docker Engine).
 Run again to update installed tools. No user credentials are configured.
@@ -49,7 +49,7 @@ main() {
   echo 'Install/update packages from enabled RHEL repositories (BaseOS and AppStream required).'
   dnf -y --refresh install ca-certificates curl unzip tar gzip jq git openssh-clients \
     shadow-utils slirp4netns fuse-overlayfs \
-    bind-utils iproute iputils nmap-ncat net-tools traceroute mtr tcpdump nmap socat openssl telnet
+    bind-utils iproute iputils nmap-ncat openssl
   # Respect the administrator's enabled container-tools stream; do not reset it.
   dnf -y module install container-tools
   dnf -y upgrade podman buildah skopeo git

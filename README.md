@@ -32,7 +32,7 @@ installation stops the script; successful previous steps remain installed.
 | GitLab CLI (`glab`) | Latest official Linux release, SHA-256 checked, `/usr/local/bin/glab` |
 | AWS CLI v2 (`aws`) | Latest official bundled installer, `/usr/local/aws-cli`, links in `/usr/local/bin` |
 | VS Code (`code`) | Latest stable package available in Microsoft's signed RPM repository |
-| Networking | curl, dig/nslookup, ip/ss, ping, nc/ncat, netstat, traceroute, mtr, tcpdump, nmap, socat, OpenSSL, Telnet, jq |
+| Networking | curl, dig/nslookup, ip/ss, ping, nc/ncat, OpenSSL; jq for JSON responses |
 
 AWS downloads use the official HTTPS endpoint; this installer does not additionally
 verify AWS's detached PGP signature. GitLab checksums are obtained from its official
@@ -110,11 +110,11 @@ git --version
 glab version
 aws --version
 command -v code  # unless --skip-code
-command -v dig ss nc telnet tcpdump
+command -v curl dig ss ping nc openssl
 ```
 
-Packet capture and some network probes may require elevated privileges. Installing
-their binaries system-wide does not grant every user packet-capture privileges.
+Networking tools are limited to basic DNS, interface/socket inspection, reachability,
+TCP connectivity, HTTP, and TLS checks. No packet-capture or port-scanning suite is installed.
 
 ## Sources
 
@@ -131,7 +131,6 @@ Run `shellcheck setup.sh configure-rootless-user.sh tests/rootless.sh` and
 checks subordinate ID allocation, non-overlap, repeated execution, and rejection
 of unknown accounts. It does not launch nested Podman containers.
 
-Full installation requires registered RHEL repositories. Public UBI 8 repositories
-do not include every diagnostic package (including traceroute, tcpdump, and telnet),
-so a UBI-only full install is not supported. Validate GUI launch, rootless containers,
+Full installation is intended for registered RHEL repositories; the UBI tests above
+cover the rootless-user helper only. Validate GUI launch, rootless containers,
 and cloud logins on your target RHEL host before using it as a standard image.
