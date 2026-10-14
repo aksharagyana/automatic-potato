@@ -46,12 +46,18 @@ The script does not install software inside `/root` or share login tokens.
 ## Each user: Podman
 
 Rootless Podman keeps each user's containers and images separate. It needs
-subordinate UID/GID mappings. For each **existing local user**, an administrator runs:
+subordinate UID/GID mappings. To configure your own account, run the helper with sudo; it defaults to `SUDO_USER`,
+the account that invoked sudo:
 
 ```bash
+sudo bash configure-rootless-user.sh
+
+# An administrator can explicitly configure another existing local user:
 sudo bash configure-rootless-user.sh alice
-sudo bash configure-rootless-user.sh bob
 ```
+
+A direct root login must supply an explicit username; the helper will not guess
+from `USER`, `who`, or another login session.
 
 The helper preserves existing mappings, allocates unused ranges when absent, and
 serializes concurrent uses of this helper. Coordinate with LDAP/central identity

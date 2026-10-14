@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
 # Allocate non-overlapping subordinate IDs to one existing local user.
 set -euo pipefail
-if [[ "${1:-}" == --help || $# -ne 1 ]]; then
-  echo 'Usage: sudo bash configure-rootless-user.sh USERNAME'
+usage() {
+  echo 'Usage: sudo bash configure-rootless-user.sh [USERNAME]'
+  echo 'Defaults to the user who invoked sudo (SUDO_USER).'
   echo 'Preserves existing mappings; allocates a free 65536-ID range when absent.'
-  exit 0
-fi
+}
+if [[ "${1:-}" == --help ]]; then usage; exit 0; fi
+if (($# > 1)); then usage >&2; exit 1; fi
 [[ $EUID -eq 0 ]] || { echo 'Run with sudo.' >&2; exit 1; }
-[[ "$1" != -* ]] || { echo 'Invalid username.' >&2; exit 1; }
-user="$1"
+user="${1:-${SUDO_USER:-}}"
+if [[ -z "$user" || "$user" == root ]]; then
+  echo 'Cannot infer a non-root sudo user. Supply an explicit username.' >&2
+  exit 1
+fi
+[[ "$user" != -* ]] || { echo 'Invalid username.' >&2; exit 1; }
 entry="$(getent passwd "$user")" || { echo 'User does not exist.' >&2; exit 1; }
 uid="$(printf '%s' "$entry" | cut -d: -f3)"
 [[ "$uid" -ge 1000 && "$uid" -lt 60000 ]] || { echo 'Expected a regular local user (UID 1000–59999).' >&2; exit 1; }

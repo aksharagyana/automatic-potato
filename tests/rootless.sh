@@ -8,8 +8,9 @@ useradd -m testbob
 for name in testalice testbob; do
   sed -i "/^${name}:/d" /etc/subuid /etc/subgid
 done
-bash "$helper" testalice
-bash "$helper" testbob
+SUDO_USER=testalice bash "$helper"
+# Explicit target overrides the sudo caller.
+SUDO_USER=testalice bash "$helper" testbob
 before="$(cat /etc/subuid /etc/subgid)"
 bash "$helper" testalice
 [[ "$before" == "$(cat /etc/subuid /etc/subgid)" ]]
@@ -25,4 +26,13 @@ awk -F: '
 if bash "$helper" nonexistent_test_user; then
   echo 'Unknown account was unexpectedly accepted' >&2; exit 1
 fi
-echo 'Rootless mapping allocation, non-overlap, idempotence, and unknown-user checks passed.'
+for caller in '' root; do
+  if SUDO_USER="$caller" bash "$helper"; then
+    echo 'Ambiguous/root caller was unexpectedly accepted' >&2; exit 1
+  fi
+done
+if bash "$helper" testalice testbob; then
+  echo 'Extra arguments were unexpectedly accepted' >&2; exit 1
+fi
+[[ "$before" == "$(cat /etc/subuid /etc/subgid)" ]]
+echo 'Rootless mapping, default sudo user, explicit override, and rejection checks passed.'
