@@ -1,0 +1,5 @@
+FROM registry.access.redhat.com/ubi8/ubi:latest
+RUN dnf -y install shadow-utils util-linux && dnf clean all
+COPY configure-rootless-user.sh /setup/configure-rootless-user.sh
+COPY tests/rootless.sh /setup/test-rootless.sh
+RUN bash /setup/test-rootless.sh

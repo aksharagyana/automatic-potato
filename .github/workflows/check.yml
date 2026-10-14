@@ -1,0 +1,13 @@
+name: Check shell scripts
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash -n setup.sh configure-rootless-user.sh
+      - run: shellcheck setup.sh configure-rootless-user.sh tests/rootless.sh
+      - run: bash setup.sh --help
+      - run: docker build -f tests/Containerfile -t rhel8-rootless-tests .
