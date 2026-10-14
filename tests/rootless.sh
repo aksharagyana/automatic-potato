@@ -36,3 +36,35 @@ if bash "$helper" testalice testbob; then
 fi
 [[ "$before" == "$(cat /etc/subuid /etc/subgid)" ]]
 echo 'Rootless mapping, default sudo user, explicit override, and rejection checks passed.'
+
+# Enterprise-sized UIDs must be accepted, without overlapping real host IDs.
+useradd -m -u 1200000000 testhigh
+sed -i '/^testhigh:/d' /etc/subuid /etc/subgid
+SUDO_USER=testhigh bash "$helper"
+for file in /etc/subuid /etc/subgid; do
+  awk -F: '$1=="testhigh" {if ($2<=1200000000 || $3!=65536) exit 1; found=1} END {if (!found) exit 1}' "$file"
+done
+# Model a directory user visible through NSS but absent from /etc/passwd.
+getent() {
+  if [[ "${1:-}" == passwd && "${2:-}" == directoryuser ]]; then
+    echo 'directoryuser:x:1300000000:1300000000:Directory User:/home/directoryuser:/bin/bash'
+  else
+    command getent "$@"
+  fi
+}
+export -f getent
+SUDO_USER=directoryuser bash "$helper"
+before="$(cat /etc/subuid /etc/subgid)"
+SUDO_USER=directoryuser bash "$helper"
+[[ "$before" == "$(cat /etc/subuid /etc/subgid)" ]]
+for file in /etc/subuid /etc/subgid; do
+  awk -F: '$1=="directoryuser" {if ($2<=1300000000 || $3!=65536) exit 1; found=1} END {if (!found) exit 1}' "$file"
+done
+echo 'High-UID and directory-user regression checks passed.'
+
+# Do not modify files when a central subordinate-ID provider is configured.
+printf '\nsubid: sss\n' >> /etc/nsswitch.conf
+if SUDO_USER=directoryuser bash "$helper"; then
+  echo 'Central subid provider was unexpectedly bypassed' >&2; exit 1
+fi
+[[ "$before" == "$(cat /etc/subuid /etc/subgid)" ]]

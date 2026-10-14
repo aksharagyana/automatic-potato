@@ -52,7 +52,7 @@ the account that invoked sudo:
 ```bash
 sudo bash configure-rootless-user.sh
 
-# An administrator can explicitly configure another existing local user:
+# An administrator can explicitly configure another existing user:
 sudo bash configure-rootless-user.sh alice
 ```
 
@@ -60,9 +60,10 @@ A direct root login must supply an explicit username; the helper will not guess
 from `USER`, `who`, or another login session.
 
 The helper preserves existing mappings, allocates unused ranges when absent, and
-serializes concurrent uses of this helper. Coordinate with LDAP/central identity
-and other account provisioning tools before assigning ranges; those systems are
-outside this helper's scope. It does not create accounts or grant sudo access.
+serializes concurrent uses of this helper. High UIDs and directory users resolved by `getent` are supported when subordinate
+IDs use local files. A configured external `subid` provider (such as SSSD) must be
+managed through your identity administrator. Coordinate ranges with central identity
+and other provisioning tools: directory enumeration may not expose every host ID. It does not create accounts or grant sudo access.
 
 Then, as each user in a fresh login session:
 
