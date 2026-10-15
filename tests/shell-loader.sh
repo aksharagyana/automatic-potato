@@ -43,4 +43,11 @@ source "$fixture/repo with spaces/shell.sh"
 # shellcheck disable=SC1091
 source "$repo/shell.sh"
 declare -F connect_eks >/dev/null
+# Diagnostic logs expose filenames and counts, not environment values.
+# shellcheck disable=SC1091
+SHELL_UTILS_DEBUG=1 source "$repo/shell.sh" 2>"$fixture/debug.log"
+grep -q '\[shell-utils\] Directory:' "$fixture/debug.log"
+grep -q '\[shell-utils\] Sourcing: .*utils/eks.sh' "$fixture/debug.log"
+grep -q '\[shell-utils\] Loaded [0-9][0-9]* utility file(s)' "$fixture/debug.log"
+declare -F connect_eks >/dev/null
 echo 'Recursive shell loader checks passed.'

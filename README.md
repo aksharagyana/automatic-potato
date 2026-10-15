@@ -191,3 +191,19 @@ graphify explain "connect_eks"
 
 Agent guidance is in `AGENTS.md`. Regenerate the semantic graph after changing
 shell code or documentation; graphify is not run during shell startup.
+
+### Troubleshooting utility loading
+
+Enable filename-only diagnostics in your current Bash shell:
+
+```bash
+SHELL_UTILS_DEBUG=1 source /path/to/automatic-potato/shell.sh
+type connect_eks
+```
+
+The log shows the resolved directory, each file before and after sourcing, and
+the loaded file count. It does not trace commands or print environment values
+(utility scripts themselves may print output). An empty discovery emits a warning
+even without debug mode. Locally added files such as `utils/env.sh` are loaded
+too, whether or not Git tracks them; keep secrets out of commits. Files load in
+alphabetical path order, so `eks.sh` loads before `env.sh`.
