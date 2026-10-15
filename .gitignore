@@ -2,3 +2,8 @@
 .env.*
 *.log
 .DS_Store
+
+# Generated knowledge graph and local extraction cache
+graphify-out/
+.graphify/
+.graphify_*.json

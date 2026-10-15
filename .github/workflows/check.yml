@@ -7,7 +7,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: bash -n setup.sh configure-rootless-user.sh
-      - run: shellcheck setup.sh configure-rootless-user.sh tests/rootless.sh
+      - run: bash -n setup.sh configure-rootless-user.sh shell.sh tests/shell-loader.sh
+      - run: shellcheck setup.sh configure-rootless-user.sh shell.sh tests/rootless.sh tests/shell-loader.sh
       - run: bash setup.sh --help
       - run: docker build -f tests/Containerfile -t rhel8-rootless-tests .
+      - run: bash tests/shell-loader.sh

@@ -141,3 +141,53 @@ of unknown accounts. It does not launch nested Podman containers.
 Full installation is intended for registered RHEL repositories; the UBI tests above
 cover the rootless-user helper only. Validate GUI launch, rootless containers,
 and cloud logins on your target RHEL host before using it as a standard image.
+
+## Reusable shell utilities
+
+In Bash on RHEL 8, source the single entry point from any working directory:
+
+```bash
+source /path/to/automatic-potato/shell.sh
+connect_eks /path/to/kubeconfig
+```
+
+To make functions available in every interactive Bash session, add that same
+`source` line (using the absolute path to your checkout) to your `~/.bashrc`.
+No sudo is needed. Sourcing keeps functions in your current shell; executing
+`bash shell.sh` cannot do that and prints a usage error.
+
+The loader discovers all regular `.sh` files recursively under `utils`, including
+nested directories, sorted by full path using the C locale. Paths with spaces
+are supported. It does not follow symlinks, change your working directory, or
+load installation/test scripts outside `utils`. Source it again after adding or
+editing utilities. A failed source stops loading and reports the file; functions
+already loaded are not rolled back.
+
+Utility files should define functions only, without top-level cloud calls,
+credentials, shell-option changes, or other side effects. All discovered shell
+files execute in your shell, so keep this checkout writable only by trusted users.
+Machine-specific values belong in function arguments or your own environment.
+`connect_eks` requires AWS CLI and kubectl when called; kubectl is not installed
+by `setup.sh`. The loader itself needs neither cloud login nor cluster access.
+
+Run `bash tests/shell-loader.sh` to verify recursive loading.
+
+## Graphify
+
+Graphify is optional developer tooling, not a dependency for loading utilities.
+Install the `graphifyy` package in an isolated Python environment supported by
+that package, then use the graphify skill to build or refresh this repository's
+knowledge graph. Generated output in `graphify-out/` is local and gitignored.
+
+The current graphify CLI does not extract Bash files with `graphify update .`.
+Use semantic extraction through the graphify skill for the shell utilities and
+README; do not treat an AST-only update as a complete map of this repository.
+After a graph exists, query it with:
+
+```bash
+graphify query "How are shell utilities loaded?"
+graphify explain "connect_eks"
+```
+
+Agent guidance is in `AGENTS.md`. Regenerate the semantic graph after changing
+shell code or documentation; graphify is not run during shell startup.
